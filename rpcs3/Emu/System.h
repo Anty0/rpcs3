@@ -155,6 +155,14 @@ enum class detail_level
 	high,
 };
 
+enum class screen_quadrant
+{
+	top_left,
+	top_right,
+	bottom_left,
+	bottom_right
+};
+
 enum class tsx_usage
 {
 	disabled,
@@ -174,7 +182,7 @@ struct EmuCallbacks
 	std::function<void()> on_stop;
 	std::function<void()> on_ready;
 	std::function<void()> exit;
-	std::function<void(s32, s32)> handle_taskbar_progress;
+	std::function<void(s32, s32)> handle_taskbar_progress; // (type, value) type: 0 for reset, 1 for increment, 2 for set_limit
 	std::function<std::shared_ptr<class KeyboardHandlerBase>()> get_kb_handler;
 	std::function<std::shared_ptr<class MouseHandlerBase>()> get_mouse_handler;
 	std::function<std::shared_ptr<class pad_thread>()> get_pad_handler;
@@ -419,8 +427,12 @@ struct cfg_root : cfg::node
 
 			cfg::_bool perf_overlay_enabled{this, "Enabled", false};
 			cfg::_enum<detail_level> level{this, "Detail level", detail_level::high};
-			cfg::_int<30, 5000> update_interval{this, "Metrics update interval (ms)", 350};
-			cfg::_int<4, 36> font_size{this, "Font size (px)", 10};
+			cfg::_int<30, 5000> update_interval{ this, "Metrics update interval (ms)", 350 };
+			cfg::_int<4, 36> font_size{ this, "Font size (px)", 10 };
+			cfg::_enum<screen_quadrant> position{this, "Position", screen_quadrant::top_left};
+			cfg::string font{this, "Font", "n023055ms.ttf"};
+			cfg::_int<0, 500> margin{this, "Margin (px)", 50};
+			cfg::_int<0, 100> opacity{this, "Opacity (%)", 70};
 
 		} perf_overlay{this};
 

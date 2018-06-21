@@ -26,8 +26,7 @@
 #include <thread>
 
 #ifdef WITH_DISCORD_RPC
-#include "discord_rpc.h"
-#include "discord_register.h"
+#include "_discord_utils.h"
 #endif
 
 inline std::string sstr(const QString& _in) { return _in.toStdString(); }
@@ -109,11 +108,11 @@ settings_dialog::settings_dialog(std::shared_ptr<gui_settings> guiSettings, std:
 	}
 
 	// Discord variables
-	bool use_discord = xgui_settings->GetValue(gui::m_richPresence).toBool();
-	QString discord_state = xgui_settings->GetValue(gui::m_discordState).toString();
+	m_use_discord = xgui_settings->GetValue(gui::m_richPresence).toBool();
+	m_discord_state = xgui_settings->GetValue(gui::m_discordState).toString();
 
 	// Various connects
-	connect(ui->okButton, &QAbstractButton::clicked, [=]
+	connect(ui->okButton, &QAbstractButton::clicked, [=, use_discord_old = m_use_discord, discord_state_old = m_discord_state]
 	{
 		std::set<std::string> selectedlle;
 		for (int i = 0; i<ui->lleList->count(); ++i)
@@ -129,29 +128,26 @@ settings_dialog::settings_dialog(std::shared_ptr<gui_settings> guiSettings, std:
 		xemu_settings->SaveSettings();
 		accept();
 
+		// Discord Settings can be saved regardless of WITH_DISCORD_RPC
+		xgui_settings->SetValue(gui::m_richPresence, m_use_discord);
+		xgui_settings->SetValue(gui::m_discordState, m_discord_state);
+
 #ifdef WITH_DISCORD_RPC
-		bool use_discord_new = xgui_settings->GetValue(gui::m_richPresence).toBool();
-		QString discord_state_new = xgui_settings->GetValue(gui::m_discordState).toString();
-
-		if (use_discord != use_discord_new || discord_state != discord_state_new)
+		if (m_use_discord != use_discord_old)
 		{
-			if (use_discord_new)
+			if (m_use_discord)
 			{
-				DiscordEventHandlers handlers = {};
-				Discord_Initialize("424004941485572097", &handlers, 1, NULL);
-
-				DiscordRichPresence discordPresence = {};
-				discordPresence.details = "Idle";
-				discordPresence.state = sstr(discord_state_new).c_str();
-				discordPresence.largeImageKey = "rpcs3_logo";
-				discordPresence.largeImageText = "RPCS3 is the world's first PlayStation 3 emulator.";
-				discordPresence.startTimestamp = time(0);
-				Discord_UpdatePresence(&discordPresence);
+				discord::initialize();
+				discord::update_presence(sstr(m_discord_state));
 			}
 			else
 			{
-				Discord_ClearPresence();
+				discord::shutdown();
 			}
+		}
+		else if (m_discord_state != discord_state_old && Emu.IsStopped())
+		{
+			discord::update_presence(sstr(m_discord_state), "Idle", false);
 		}
 #endif
 	});
@@ -742,6 +738,9 @@ settings_dialog::settings_dialog(std::shared_ptr<gui_settings> guiSettings, std:
 	xemu_settings->EnhanceComboBox(ui->perfOverlayDetailLevel, emu_settings::PerfOverlayDetailLevel);
 	SubscribeTooltip(ui->perfOverlayDetailLevel, json_emu_overlay["perfOverlayDetailLevel"].toString());
 
+	xemu_settings->EnhanceComboBox(ui->perfOverlayPosition, emu_settings::PerfOverlayPosition);
+	SubscribeTooltip(ui->perfOverlayPosition, json_emu_overlay["perfOverlayPosition"].toString());
+
 	// Checkboxes
 
 	SubscribeTooltip(ui->gs_resizeOnBoot, json_emu_misc["gs_resizeOnBoot"].toString());
@@ -777,6 +776,7 @@ settings_dialog::settings_dialog(std::shared_ptr<gui_settings> guiSettings, std:
 		ui->label_update_interval->setEnabled(enabled);
 		ui->label_font_size->setEnabled(enabled);
 		ui->perfOverlayDetailLevel->setEnabled(enabled);
+		ui->perfOverlayPosition->setEnabled(enabled);
 		ui->perfOverlayUpdateInterval->setEnabled(enabled);
 		ui->perfOverlayFontSize->setEnabled(enabled);
 	};
@@ -864,21 +864,21 @@ settings_dialog::settings_dialog(std::shared_ptr<gui_settings> guiSettings, std:
 	if (!game)
 	{
 		// Discord:
-		ui->useRichPresence->setChecked(use_discord);
-		ui->label_discordState->setEnabled(use_discord);
-		ui->discordState->setEnabled(use_discord);
-		ui->discordState->setText(discord_state);
+		ui->useRichPresence->setChecked(m_use_discord);
+		ui->label_discordState->setEnabled(m_use_discord);
+		ui->discordState->setEnabled(m_use_discord);
+		ui->discordState->setText(m_discord_state);
 
 		connect(ui->useRichPresence, &QCheckBox::clicked, [this](bool checked)
 		{
 			ui->discordState->setEnabled(checked);
 			ui->label_discordState->setEnabled(checked);
-			xgui_settings->SetValue(gui::m_richPresence, checked);
+			m_use_discord = checked;
 		});
 
 		connect(ui->discordState, &QLineEdit::editingFinished, [this]()
 		{
-			xgui_settings->SetValue(gui::m_discordState, ui->discordState->text());
+			m_discord_state = ui->discordState->text();
 		});
 
 		// colorize preview icons
