@@ -107,20 +107,20 @@
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug - LLVM|x64'">true</IgnoreImportLibrary>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\3rdparty\hidapi\hidapi;.\;..\;..\asmjit\src;..\3rdparty\yaml-cpp\include;..\3rdparty\ffmpeg\WindowsInclude;..\3rdparty\cereal\include;..\3rdparty\ffmpeg\Windows\x86_64\Include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(UniversalCRT_IncludePath);..\3rdparty\minidx12\Include;..\3rdparty\GSL\include;..\3rdparty\libpng;..\3rdparty\GL;..\3rdparty\stblib;..\3rdparty\OpenAL\include;..\3rdparty\pugixml\src;..\3rdparty\Optional;..\3rdparty\discord-rpc\include</IncludePath>
+    <IncludePath>..\3rdparty\hidapi\hidapi;.\;..\;..\asmjit\src;..\3rdparty\yaml-cpp\include;..\3rdparty\ffmpeg\WindowsInclude;..\3rdparty\cereal\include;..\3rdparty\ffmpeg\Windows\x86_64\Include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(UniversalCRT_IncludePath);..\3rdparty\minidx12\Include;..\3rdparty\GSL\include;..\3rdparty\libpng;..\3rdparty\GL;..\3rdparty\stblib;..\3rdparty\OpenAL\include;..\3rdparty\pugixml\src;..\3rdparty\Optional;..\3rdparty\discord-rpc\include;..\3rdparty\zlib</IncludePath>
     <LibraryPath>$(SolutionDir)lib\$(Configuration)-$(Platform)\;$(UniversalCRT_LibraryPath_x64);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - LLVM|x64'">
-    <IncludePath>..\3rdparty\hidapi\hidapi;.\;..\;..\asmjit\src;..\3rdparty\yaml-cpp\include;..\3rdparty\ffmpeg\WindowsInclude;..\3rdparty\cereal\include;..\3rdparty\ffmpeg\Windows\x86_64\Include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(UniversalCRT_IncludePath);..\3rdparty\minidx12\Include;..\3rdparty\GSL\include;..\3rdparty\libpng;..\3rdparty\GL;..\3rdparty\stblib;..\3rdparty\OpenAL\include;..\3rdparty\pugixml\src;..\3rdparty\Optional;..\3rdparty\discord-rpc\include</IncludePath>
+    <IncludePath>..\3rdparty\hidapi\hidapi;.\;..\;..\asmjit\src;..\3rdparty\yaml-cpp\include;..\3rdparty\ffmpeg\WindowsInclude;..\3rdparty\cereal\include;..\3rdparty\ffmpeg\Windows\x86_64\Include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(UniversalCRT_IncludePath);..\3rdparty\minidx12\Include;..\3rdparty\GSL\include;..\3rdparty\libpng;..\3rdparty\GL;..\3rdparty\stblib;..\3rdparty\OpenAL\include;..\3rdparty\pugixml\src;..\3rdparty\Optional;..\3rdparty\discord-rpc\include;..\3rdparty\zlib</IncludePath>
     <LibraryPath>$(SolutionDir)lib\Debug-x64;$(SolutionDir)lib\$(Configuration)-$(Platform)\;$(UniversalCRT_LibraryPath_x64);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LibraryPath>$(SolutionDir)lib\$(Configuration)-$(Platform)\;$(UniversalCRT_LibraryPath_x64);$(LibraryPath)</LibraryPath>
-    <IncludePath>..\3rdparty\hidapi\hidapi;.\;..\;..\asmjit\src;..\3rdparty\yaml-cpp\include;..\3rdparty\ffmpeg\WindowsInclude;..\3rdparty\cereal\include;..\3rdparty\ffmpeg\Windows\x86_64\Include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(UniversalCRT_IncludePath);..\3rdparty\minidx12\Include;..\3rdparty\GSL\include;..\3rdparty\libpng;..\3rdparty\GL;..\3rdparty\stblib;..\3rdparty\OpenAL\include;..\3rdparty\pugixml\src;..\3rdparty\Optional;..\3rdparty\discord-rpc\include</IncludePath>
+    <IncludePath>..\3rdparty\hidapi\hidapi;.\;..\;..\asmjit\src;..\3rdparty\yaml-cpp\include;..\3rdparty\ffmpeg\WindowsInclude;..\3rdparty\cereal\include;..\3rdparty\ffmpeg\Windows\x86_64\Include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(UniversalCRT_IncludePath);..\3rdparty\minidx12\Include;..\3rdparty\GSL\include;..\3rdparty\libpng;..\3rdparty\GL;..\3rdparty\stblib;..\3rdparty\OpenAL\include;..\3rdparty\pugixml\src;..\3rdparty\Optional;..\3rdparty\discord-rpc\include;..\3rdparty\zlib</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - LLVM|x64'">
     <LibraryPath>$(SolutionDir)lib\Release-x64;$(SolutionDir)lib\$(Configuration)-$(Platform)\;$(UniversalCRT_LibraryPath_x64);$(LibraryPath)</LibraryPath>
-    <IncludePath>..\3rdparty\hidapi\hidapi;.\;..\;..\asmjit\src;..\3rdparty\yaml-cpp\include;..\3rdparty\ffmpeg\WindowsInclude;..\3rdparty\cereal\include;..\3rdparty\ffmpeg\Windows\x86_64\Include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(UniversalCRT_IncludePath);..\3rdparty\minidx12\Include;..\3rdparty\GSL\include;..\3rdparty\libpng;..\3rdparty\GL;..\3rdparty\stblib;..\3rdparty\OpenAL\include;..\3rdparty\pugixml\src;..\3rdparty\Optional;..\3rdparty\discord-rpc\include</IncludePath>
+    <IncludePath>..\3rdparty\hidapi\hidapi;.\;..\;..\asmjit\src;..\3rdparty\yaml-cpp\include;..\3rdparty\ffmpeg\WindowsInclude;..\3rdparty\cereal\include;..\3rdparty\ffmpeg\Windows\x86_64\Include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(UniversalCRT_IncludePath);..\3rdparty\minidx12\Include;..\3rdparty\GSL\include;..\3rdparty\libpng;..\3rdparty\GL;..\3rdparty\stblib;..\3rdparty\OpenAL\include;..\3rdparty\pugixml\src;..\3rdparty\Optional;..\3rdparty\discord-rpc\include;..\3rdparty\zlib</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -166,7 +166,7 @@
     </ResourceCompile>
     <PostBuildEvent>
       <Command>
-        $(QTDIR)\bin\windeployqt --no-angle --no-opengl-sw --no-svg --no-translations --no-quick --plugindir $(TargetDir)\qt\plugins $(TargetPath)
+        $(QTDIR)\bin\windeployqt --no-angle --no-opengl-sw --no-svg --no-translations --no-quick --plugindir "$(TargetDir)qt\plugins" "$(TargetPath)"
       </Command>
     </PostBuildEvent>
     <PostBuildEvent>
@@ -218,7 +218,7 @@
     </ResourceCompile>
     <PostBuildEvent>
       <Command>
-        $(QTDIR)\bin\windeployqt --no-angle --no-opengl-sw --no-svg --no-translations --no-quick --plugindir $(TargetDir)\qt\plugins $(TargetPath)
+        $(QTDIR)\bin\windeployqt --no-angle --no-opengl-sw --no-svg --no-translations --no-quick --plugindir "$(TargetDir)qt\plugins" "$(TargetPath)"
       </Command>
     </PostBuildEvent>
     <PostBuildEvent>
@@ -271,7 +271,7 @@
     </ResourceCompile>
     <PostBuildEvent>
       <Command>
-        $(QTDIR)\bin\windeployqt --no-angle --no-opengl-sw --no-svg --no-translations --no-quick --plugindir $(TargetDir)\qt\plugins --debug $(TargetPath)
+        $(QTDIR)\bin\windeployqt --no-angle --no-opengl-sw --no-svg --no-translations --no-quick --plugindir "$(TargetDir)qt\plugins" --debug "$(TargetPath)"
       </Command>
     </PostBuildEvent>
     <PostBuildEvent>
@@ -324,7 +324,7 @@
     </ResourceCompile>
     <PostBuildEvent>
       <Command>
-        $(QTDIR)\bin\windeployqt --no-angle --no-opengl-sw --no-svg --no-translations --no-quick --plugindir $(TargetDir)\qt\plugins --debug $(TargetPath)
+        $(QTDIR)\bin\windeployqt --no-angle --no-opengl-sw --no-svg --no-translations --no-quick --plugindir "$(TargetDir)qt\plugins" --debug "$(TargetPath)"
       </Command>
     </PostBuildEvent>
     <PostBuildEvent>
@@ -987,7 +987,6 @@
     <ClCompile Include="rpcs3qt\debugger_list.cpp" />
     <ClCompile Include="rpcs3qt\_discord_utils.cpp" />
     <ClCompile Include="rpcs3qt\find_dialog.cpp" />
-    <ClCompile Include="rpcs3qt\gamepads_settings_dialog.cpp" />
     <ClCompile Include="rpcs3qt\game_compatibility.cpp" />
     <ClCompile Include="rpcs3qt\game_list_grid.cpp" />
     <ClCompile Include="rpcs3qt\game_list_grid_delegate.cpp" />
@@ -1428,7 +1427,6 @@
     <ClInclude Include="rpcs3qt\_discord_utils.h" />
     <ClInclude Include="rpcs3qt\find_dialog.h" />
     <ClInclude Include="rpcs3qt\custom_table_widget_item.h" />
-    <ClInclude Include="rpcs3qt\gamepads_settings_dialog.h" />
     <CustomBuild Include="rpcs3qt\game_compatibility.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release - LLVM|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release - LLVM|x64'">Moc%27ing game_compatibility.h...</Message>
