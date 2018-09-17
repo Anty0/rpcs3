@@ -153,8 +153,6 @@ namespace gl
 		std::unique_ptr<gl::viewable_image> managed_texture;
 		std::unique_ptr<gl::texture> scaled_texture;
 
-		bool is_depth = false;
-
 		texture::format format = texture::format::rgba;
 		texture::type type = texture::type::ubyte;
 		rsx::surface_antialiasing aa_mode = rsx::surface_antialiasing::center_1_sample;
@@ -260,7 +258,6 @@ namespace gl
 			flushed = false;
 			synchronized = false;
 			sync_timestamp = 0ull;
-			is_depth = false;
 
 			vram_texture = nullptr;
 			managed_texture.reset();
@@ -287,11 +284,14 @@ namespace gl
 			flushed = false;
 			synchronized = false;
 			sync_timestamp = 0ull;
-			is_depth = false;
+
+			if (rsx_pitch > 0)
+				this->rsx_pitch = rsx_pitch;
+			else
+				this->rsx_pitch = cpu_address_range / height;
 
 			this->width = w;
 			this->height = h;
-			this->rsx_pitch = rsx_pitch;
 			this->real_pitch = 0;
 			this->depth = depth;
 			this->mipmaps = mipmaps;
@@ -347,11 +347,6 @@ namespace gl
 			}
 		}
 
-		void set_depth_flag(bool is_depth_fmt)
-		{
-			is_depth = is_depth_fmt;
-		}
-
 		void copy_texture(bool=false)
 		{
 			if (!pbo_id)
@@ -405,7 +400,8 @@ namespace gl
 						scaled_texture = std::make_unique<gl::texture>(GL_TEXTURE_2D, real_width, real_height, 1, 1, (GLenum)ifmt);
 					}
 
-					bool linear_interp = false; //TODO: Make optional or detect full sized sources
+					const bool is_depth = is_depth_texture();
+					const bool linear_interp = is_depth? false : true;
 					g_hw_blitter->scale_image(vram_texture, scaled_texture.get(), src_area, dst_area, linear_interp, is_depth, {});
 					target_texture = scaled_texture.get();
 				}
@@ -595,7 +591,7 @@ namespace gl
 
 		void destroy()
 		{
-			if (!locked && pbo_id == 0 && vram_texture == 0 && m_fence.is_empty())
+			if (!locked && pbo_id == 0 && vram_texture == nullptr && m_fence.is_empty())
 				//Already destroyed
 				return;
 
@@ -629,7 +625,7 @@ namespace gl
 
 		bool exists() const
 		{
-			return vram_texture != 0;
+			return vram_texture != nullptr;
 		}
 
 		bool is_flushable() const
@@ -654,7 +650,7 @@ namespace gl
 
 		bool is_empty() const
 		{
-			return vram_texture == 0;
+			return vram_texture == nullptr;
 		}
 
 		gl::texture_view* get_view(u32 remap_encoding, const std::pair<std::array<u8, 4>, std::array<u8, 4>>& remap)
@@ -674,7 +670,15 @@ namespace gl
 
 		bool is_depth_texture() const
 		{
-			return is_depth;
+			switch (vram_texture->get_internal_format())
+			{
+			case gl::texture::internal_format::depth16:
+			case gl::texture::internal_format::depth24_stencil8:
+			case gl::texture::internal_format::depth32f_stencil8:
+				return true;
+			default:
+				return false;
+			}
 		}
 
 		bool has_compatible_format(gl::texture* tex) const
@@ -950,15 +954,6 @@ namespace gl
 		cached_texture_section* create_new_texture(void*&, u32 rsx_address, u32 rsx_size, u16 width, u16 height, u16 depth, u16 mipmaps, u32 gcm_format,
 				rsx::texture_upload_context context, rsx::texture_dimension_extended type, rsx::texture_create_flags flags) override
 		{
-			bool depth_flag = false;
-			switch (gcm_format)
-			{
-			case CELL_GCM_TEXTURE_DEPTH24_D8:
-			case CELL_GCM_TEXTURE_DEPTH16:
-				depth_flag = true;
-				break;
-			}
-
 			auto image = gl::create_texture(gcm_format, width, height, depth, mipmaps, type);
 
 			const auto swizzle = get_component_mapping(gcm_format, flags);
@@ -966,7 +961,6 @@ namespace gl
 
 			auto& cached = create_texture(image, rsx_address, rsx_size, width, height, depth, mipmaps);
 			cached.set_dirty(false);
-			cached.set_depth_flag(depth_flag);
 			cached.set_view_flags(flags);
 			cached.set_context(context);
 			cached.set_gcm_format(gcm_format);

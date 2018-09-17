@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 #include "types.h"
 #include "Atomic.h"
 
@@ -113,25 +114,13 @@ class reader_lock final
 	shared_mutex& m_mutex;
 	bool m_upgraded = false;
 
-	void lock()
-	{
-		m_upgraded ? m_mutex.lock() : m_mutex.lock_shared();
-	}
-
-	void unlock()
-	{
-		m_upgraded ? m_mutex.unlock() : m_mutex.unlock_shared();
-	}
-
-	friend class cond_variable;
-
 public:
 	reader_lock(const reader_lock&) = delete;
 
 	explicit reader_lock(shared_mutex& mutex)
 		: m_mutex(mutex)
 	{
-		lock();
+		m_mutex.lock_shared();
 	}
 
 	// One-way lock upgrade
@@ -146,91 +135,6 @@ public:
 
 	~reader_lock()
 	{
-		unlock();
+		m_upgraded ? m_mutex.unlock() : m_mutex.unlock_shared();
 	}
-};
-
-// Simplified exclusive (writer) lock implementation.
-class writer_lock final
-{
-	shared_mutex& m_mutex;
-
-	void lock()
-	{
-		m_mutex.lock();
-	}
-
-	void unlock()
-	{
-		m_mutex.unlock();
-	}
-
-	friend class cond_variable;
-
-public:
-	writer_lock(const writer_lock&) = delete;
-
-	explicit writer_lock(shared_mutex& mutex)
-		: m_mutex(mutex)
-	{
-		lock();
-	}
-
-	~writer_lock()
-	{
-		unlock();
-	}
-};
-
-// Safe reader lock. Can be recursive above other safe locks (reader or writer).
-class safe_reader_lock final
-{
-	shared_mutex& m_mutex;
-	bool m_is_owned;
-
-	void lock()
-	{
-		m_mutex.lock_shared();
-	}
-
-	void unlock()
-	{
-		m_mutex.unlock_shared();
-	}
-
-	friend class cond_variable;
-
-public:
-	safe_reader_lock(const safe_reader_lock&) = delete;
-
-	explicit safe_reader_lock(shared_mutex& mutex);
-
-	~safe_reader_lock();
-};
-
-// Safe writer lock. Can be recursive above other safe locks. Performs upgrade and degrade operations above existing reader lock if necessary.
-class safe_writer_lock final
-{
-	shared_mutex& m_mutex;
-	bool m_is_owned;
-	bool m_is_upgraded;
-
-	void lock()
-	{
-		m_mutex.lock();
-	}
-
-	void unlock()
-	{
-		m_mutex.unlock();
-	}
-
-	friend class cond_variable;
-
-public:
-	safe_writer_lock(const safe_writer_lock&) = delete;
-
-	explicit safe_writer_lock(shared_mutex& mutex);
-
-	~safe_writer_lock();
 };

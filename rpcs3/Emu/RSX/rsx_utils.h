@@ -2,18 +2,12 @@
 
 #include "../System.h"
 #include "Utilities/geometry.h"
+#include "Utilities/asm.h"
 #include "gcm_enums.h"
 #include <atomic>
 #include <memory>
 #include <bitset>
-
-// TODO: replace the code below by #include <optional> when C++17 or newer will be used
-#include <optional.hpp>
-namespace std
-{
-	template<class T>
-	using optional = experimental::optional<T>;
-}
+#include <optional>
 
 extern "C"
 {
@@ -60,9 +54,9 @@ namespace rsx
 			}
 		}
 
-		weak_ptr(std::shared_ptr<u8>& block)
+		weak_ptr(std::shared_ptr<u8>& block, u32 size)
 		{
-			_blocks.push_back({ block, 0 });
+			_blocks.push_back({ block, size });
 			_ptr = block.get();
 		}
 
@@ -195,6 +189,11 @@ namespace rsx
 			}
 		}
 
+		u32 size() const
+		{
+			return contiguous ? _blocks[0].second : (u32)io_cache.size();
+		}
+
 		operator bool() const
 		{
 			return (_ptr != nullptr || _blocks.size() > 1);
@@ -301,14 +300,14 @@ namespace rsx
 	//
 	static inline u32 ceil_log2(u32 value)
 	{
-		return value <= 1 ? 0 : ::cntlz32((value - 1) << 1, true) ^ 31;
+		return value <= 1 ? 0 : utils::cntlz32((value - 1) << 1, true) ^ 31;
 	}
 
 	static inline u32 next_pow2(u32 x)
 	{
 		if (x <= 2) return x;
 
-		return static_cast<u32>((1ULL << 32) >> ::cntlz32(x - 1, true));
+		return static_cast<u32>((1ULL << 32) >> utils::cntlz32(x - 1, true));
 	}
 
 	// Returns interleaved bits of X|Y|Z used as Z-order curve indices
@@ -681,7 +680,7 @@ namespace rsx
 		return dst_index;
 	}
 
-	// The rsx internally adds the 'data_base_offset' and the 'vert_offset' and masks it 
+	// The rsx internally adds the 'data_base_offset' and the 'vert_offset' and masks it
 	// before actually attempting to translate to the internal address. Seen happening heavily in R&C games
 	static inline u32 get_vertex_offset_from_base(u32 vert_data_base_offset, u32 vert_base_offset)
 	{
@@ -726,6 +725,11 @@ namespace rsx
 	static inline thread* get_current_renderer()
 	{
 		return g_current_renderer;
+	}
+
+	static inline bool region_overlaps(u32 base1, u32 limit1, u32 base2, u32 limit2)
+	{
+		return (base1 < limit2 && base2 < limit1);
 	}
 
 	template <int N>
