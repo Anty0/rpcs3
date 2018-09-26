@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <stack>
 #include <deque>
@@ -204,6 +204,39 @@ namespace rsx
 		std::vector<u8> referenced_registers;  // Volatile register data
 
 		std::array<attribute_buffer_placement, 16> attribute_placement;
+
+		vertex_input_layout()
+		{
+			attribute_placement.fill(attribute_buffer_placement::none);
+		}
+
+		bool validate() const
+		{
+			switch (attribute_placement[0])
+			{
+			case attribute_buffer_placement::transient:
+			{
+				if (!referenced_registers.empty() && referenced_registers.front() == 0)
+				{
+					// ATTR[0] is position which cannot be from a register
+					return false;
+				}
+
+				// The source is inline array or immediate draw push buffer
+				return true;
+			}
+			case attribute_buffer_placement::persistent:
+			{
+				// Attribute stride cannot be 0, proper packing stride is computed elsewhere
+				verify(HERE), (!interleaved_blocks.empty() && interleaved_blocks[0].attribute_stride != 0);
+				return true;
+			}
+			case attribute_buffer_placement::none:
+			{
+				return false;
+			}
+			}
+		}
 	};
 
 	struct framebuffer_layout
@@ -323,6 +356,7 @@ namespace rsx
 		u64 timestamp_subvalue = 0;
 
 	protected:
+		std::thread::id m_rsx_thread;
 		atomic_t<bool> m_rsx_thread_exiting{true};
 		s32 m_return_addr{-1}, restore_ret_addr{-1};
 		std::array<push_buffer_vertex_info, 16> vertex_push_buffers;
@@ -347,7 +381,7 @@ namespace rsx
 		std::shared_ptr<rsx::overlays::display_manager> m_overlay_manager;
 
 		// Invalidated memory range
-		std::vector<std::pair<u32, u32>> m_invalidated_memory_ranges;
+		address_range m_invalidated_memory_range;
 
 	public:
 		RsxDmaControl* ctrl = nullptr;
@@ -368,8 +402,16 @@ namespace rsx
 		}
 		performance_counters;
 
-		// Native UI interrupts
-		atomic_t<bool> native_ui_flip_request{ false };
+		enum class flip_request : u32
+		{
+			emu_requested = 1,
+			native_ui = 2,
+
+			any = emu_requested | native_ui
+		};
+
+		atomic_bitmask_t<flip_request> async_flip_requested{};
+		u8 async_flip_buffer{ 0 };
 
 		GcmTileInfo tiles[limits::tiles_count];
 		GcmZcullInfo zculls[limits::zculls_count];
@@ -468,6 +510,7 @@ namespace rsx
 		thread();
 		virtual ~thread();
 
+		virtual void on_spawn() override;
 		virtual void on_task() override;
 		virtual void on_exit() override;
 
@@ -495,7 +538,7 @@ namespace rsx
 		virtual void flip(int buffer) = 0;
 		virtual u64 timestamp();
 		virtual bool on_access_violation(u32 /*address*/, bool /*is_writing*/) { return false; }
-		virtual void on_invalidate_memory_range(u32 /*address*/, u32 /*range*/) {}
+		virtual void on_invalidate_memory_range(const address_range & /*range*/) {}
 		virtual void notify_tile_unbound(u32 /*tile*/) {}
 
 		// zcull
@@ -563,6 +606,8 @@ namespace rsx
 
 		std::deque<internal_task_entry> m_internal_tasks;
 		void do_internal_task();
+		void handle_emu_flip(u32 buffer);
+		void handle_invalidated_memory_range();
 
 	public:
 		//std::future<void> add_internal_task(std::function<bool()> callback);
@@ -598,6 +643,13 @@ namespace rsx
 		 * There is no swapping required except for 4 u8 (according to Bleach Soul Resurection)
 		 */
 		void write_inline_array_to_buffer(void *dst_buffer);
+
+		/**
+		 * Notify that a section of memory has been mapped
+		 * If there is a notify_memory_unmapped request on this range yet to be handled,
+		 * handles it immediately.
+		 */
+		void on_notify_memory_mapped(u32 address_base, u32 size);
 
 		/**
 		 * Notify that a section of memory has been unmapped
@@ -636,6 +688,9 @@ namespace rsx
 
 		tiled_region get_tiled_address(u32 offset, u32 location);
 		GcmTileInfo *find_tile(u32 offset, u32 location);
+
+		// Emu App/Game flip, only immediately flips when called from rsxthread
+		void request_emu_flip(u32 buffer);
 
 		u32 ReadIO32(u32 addr);
 		void WriteIO32(u32 addr, u32 value);
